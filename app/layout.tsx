@@ -9,6 +9,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useAuthStore } from "@/store/useAuthStore";
 import IncomingCallListener from "@/components/call/IncomingCallListener";
 import { Toaster } from "@/components/ui/sonner";
+import { CallProvider } from "@/contexts/CallContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -54,8 +55,13 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Toaster position="top-center" />
+
+
+        <CallProvider>
         <IncomingCallListener />
         {children}
+        </CallProvider>
+        
         </body>
     </html>
   );
