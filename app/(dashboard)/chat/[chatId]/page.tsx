@@ -15,7 +15,6 @@ export default function ChatPage() {
         setText,
         sendMessage,
         startCall,
-        //joinCall,
         localVideoRef,
         remoteVideoRef,
     } = useChatPageManager(chatId as string, currentUser);

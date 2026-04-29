@@ -7,27 +7,33 @@ import { Button } from "../ui/button";
 export default function IncomingCallListener() {
   const user = useAuthStore((s) => s.user);
 
+  // FIX #1: Destructure the video refs so we can attach them to <video> elements
   const {
     incomingCall,
     acceptCall,
   } = useIncomingCallManager(user);
 
-  if (!incomingCall) return null;
-
   return (
-    <div className="fixed bottom-4 right-4 bg-white p-4 shadow rounded">
-      <p>Incoming Call...</p>
+    <>
+      {/* FIX #1: Always render video elements so refs are attached to real DOM nodes.
+          The call to acceptCall() will set srcObject on these elements correctly. */}
 
-      <Button
-        onClick={acceptCall}
-        className="bg-green-500 px-3 py-1 text-white mr-2"
-      >
-        Accept
-      </Button>
+      {incomingCall && (
+        <div className="fixed bottom-4 right-4 bg-white p-4 shadow rounded">
+          <p>Incoming Call...</p>
 
-      <Button variant="destructive" className="bg-red-500 px-3 py-1 text-white">
-        Reject
-      </Button>
-    </div>
+          <Button
+            onClick={acceptCall}
+            className="bg-green-500 px-3 py-1 text-white mr-2"
+          >
+            Accept
+          </Button>
+
+          <Button variant="destructive" className="bg-red-500 px-3 py-1 text-white">
+            Reject
+          </Button>
+        </div>
+      )}
+    </>
   );
 }
