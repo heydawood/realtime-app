@@ -3,16 +3,22 @@
 import { useState } from "react";
 import { login } from "@/lib/auth";
 import { customToast } from "@/components/common/ShowToast";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+
+ const router = useRouter()
   const handleLogin = async () => {
     try {
       await login(email, password);
       //alert("Logged In");
       customToast.success('Log in successful')
+      router.push('/')
+
     } catch (err) {
       //console.error(err);
       customToast.error(err)
@@ -24,9 +30,10 @@ export default function SignupPage() {
       <input onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
       <input onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" />
 
-      <button onClick={handleLogin} className="bg-blue-500 text-white p-2">
+      <Button onClick={handleLogin} className="bg-primary-500 hover:bg-primary-600 text-white p-2">
         Login
-      </button>
+      </Button>
+
     </div>
   );
 }

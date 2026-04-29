@@ -1,156 +1,3 @@
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import {
-//   collection,
-//   addDoc,
-//   query,
-//   orderBy,
-//   onSnapshot,
-//   doc,
-//   setDoc,
-// } from "firebase/firestore";
-// import { db } from "@/lib/firebase";
-// import { createPeerConnection } from "@/lib/webrtc";
-// import { useCallContext } from "@/contexts/CallContext";
-
-// export const useChatPageManager = (chatId: string, currentUser: any) => {
-//   const [messages, setMessages] = useState<any[]>([]);
-//   const [text, setText] = useState("");
-
-//   const { pcRef, localVideoRef, remoteVideoRef, iceQueueRef, setActiveCall } = useCallContext();
-
-//   useEffect(() => {
-//     if (!chatId) return;
-
-//     const q = query(
-//       collection(db, "chats", chatId, "messages"),
-//       orderBy("createdAt")
-//     );
-
-//     const unsub = onSnapshot(q, (snapshot) => {
-//       const msgs = snapshot.docs.map((doc) => doc.data());
-//       setMessages(msgs);
-//     });
-
-//     return () => unsub();
-//   }, [chatId]);
-
-//   const sendMessage = async () => {
-//     if (!text.trim()) return;
-
-//     await addDoc(collection(db, "chats", chatId, "messages"), {
-//       text,
-//       senderId: currentUser?.uid,
-//       createdAt: Date.now(),
-//     });
-
-//     setText("");
-//   };
-
-//   const startCall = async () => {
-//     const callId = crypto.randomUUID();
-//     const otherUserId = chatId.split("_").find((id) => id !== currentUser?.uid);
-
-//     // Clean up old peer connection
-//     if (pcRef.current) {
-//       pcRef.current.close();
-//     }
-
-//     pcRef.current = createPeerConnection();
-//     const pc = pcRef.current;
-
-//     setActiveCall({ id: callId, role: "caller" });
-
-//     pc.onconnectionstatechange = () => {
-//       console.log("Connection State:", pc.connectionState);
-//     };
-
-//     pc.oniceconnectionstatechange = () => {
-//       console.log("ICE State:", pc.iceConnectionState);
-//     };
-
-//     pc.ontrack = (event) => {
-//       if (!remoteVideoRef.current) return;
-//       if (!remoteVideoRef.current.srcObject) {
-//         remoteVideoRef.current.srcObject = new MediaStream();
-//       }
-//       (remoteVideoRef.current.srcObject as MediaStream).addTrack(event.track);
-//     };
-
-//     const callDoc = doc(db, "calls", callId);
-//     const offerCandidates = collection(callDoc, "offerCandidates");
-//     const answerCandidates = collection(callDoc, "answerCandidates");
-
-//     pc.onicecandidate = async (event) => {
-//       if (event.candidate) {
-//         await addDoc(offerCandidates, event.candidate.toJSON());
-//       }
-//     };
-
-//     const stream = await navigator.mediaDevices.getUserMedia({
-//       video: true,
-//       audio: true,
-//     });
-
-//     if (localVideoRef.current) {
-//       localVideoRef.current.srcObject = stream;
-//     }
-
-//     stream.getTracks().forEach((track) => {
-//       pc.addTrack(track, stream);
-//     });
-
-//     const offer = await pc.createOffer();
-//     await pc.setLocalDescription(offer);
-
-//     await setDoc(callDoc, {
-//       callerId: currentUser?.uid,
-//       receiverId: otherUserId,
-//       offer,
-//       status: "ringing",
-//       createdAt: Date.now(),
-//     });
-
-//     onSnapshot(callDoc, async (docSnap) => {
-//       const data = docSnap.data();
-
-//       if (data?.answer && !pc.currentRemoteDescription) {
-//         await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-
-//         for (const candidate of iceQueueRef.current) {
-//           await pc.addIceCandidate(candidate);
-//         }
-//         iceQueueRef.current = [];
-//       }
-//     });
-
-//     onSnapshot(answerCandidates, (snapshot) => {
-//       snapshot.docChanges().forEach(async (change) => {
-//         if (change.type === "added") {
-//           const candidate = new RTCIceCandidate(change.doc.data());
-
-//           if (pc.remoteDescription) {
-//             await pc.addIceCandidate(candidate);
-//           } else {
-//             iceQueueRef.current.push(candidate);
-//           }
-//         }
-//       });
-//     });
-//   };
-
-//   return {
-//     messages,
-//     text,
-//     setText,
-//     sendMessage,
-//     startCall,
-//     localVideoRef,
-//     remoteVideoRef,
-//   };
-// };
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -197,13 +44,13 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
   }, [chatId]);
 
   // SEND MESSAGE
-  const sendMessage = async () => {
+  const sendMessage = async (message: string) => {
     // 1) Don't send empty messages
-    if (!text.trim()) return;
+    if (!message.trim()) return;
 
     // 2) Add message to Firestore
     await addDoc(collection(db, "chats", chatId, "messages"), {
-      text,
+      text: message,
       senderId: currentUser?.uid,
       createdAt: Date.now(),
     });

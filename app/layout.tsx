@@ -10,6 +10,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import IncomingCallListener from "@/components/call/IncomingCallListener";
 import { Toaster } from "@/components/ui/sonner";
 import { CallProvider } from "@/contexts/CallContext";
+import CallUI from "@/components/chat/CallUI";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,13 +34,10 @@ export default function RootLayout({
 }>) {
 
 
-
   const setUser = useAuthStore((s) => s.setUser);
-
 
 //bridge between Firebase and UI, because Firebase handles authentication internally, React app doesn’t automatically know: when user logs in, logs out or when page reload happens.
 //onAuthStateChanged is listener from firebse in local globel state(zustand)
-
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {  
       setUser(user);
@@ -59,6 +57,7 @@ export default function RootLayout({
 
         <CallProvider>
         <IncomingCallListener />
+        <CallUI />
         {children}
         </CallProvider>
         
