@@ -17,6 +17,13 @@ interface CallContextType {
   isMuted: boolean;
   isCameraOff: boolean;
 
+
+  callStatus: "idle" | "calling" | "ringing" | "connected" | "ended";
+  setCallStatus: (status: any) => void;
+
+  callStartTime: number | null;
+  setCallStartTime: (t: number | null) => void;
+  cleanupCall: () => void
 }
 
 const CallContext = createContext<CallContextType | null>(null);
@@ -31,74 +38,113 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const [activeCall, setActiveCall] = useState<{ id: string; role: "caller" | "receiver" } | null>(null);
 
   const [isMuted, setIsMuted] = useState(false);
-const [isCameraOff, setIsCameraOff] = useState(false);
+  const [isCameraOff, setIsCameraOff] = useState(false);
+
+  const [callStatus, setCallStatus] = useState<CallContextType["callStatus"]>("idle");
+  const [callStartTime, setCallStartTime] = useState<number | null>(null);
 
 
 
-    useEffect(() => {
-  if (!activeCall?.id) return;
 
-  const callRef = doc(db, "calls", activeCall.id);
+  useEffect(() => {
+    if (!activeCall?.id) return;
 
-  const unsub = onSnapshot(callRef, (snap) => {
-    const data = snap.data();
+    const callRef = doc(db, "calls", activeCall.id);
 
-    if (!data) return;
+    const unsub = onSnapshot(callRef, (snap) => {
+      const data = snap.data();
 
-    if (data.status === "ended") {
-      // CLEAN EVERYTHING
+      if (!data) return;
 
-      if (pcRef.current) {
-        pcRef.current.close();
-        pcRef.current = null;
+      if (data.status === "ended") {
+        // CLEAN EVERYTHING
+
+        if (pcRef.current) {
+          pcRef.current.close();
+          pcRef.current = null;
+        }
+
+        // Stop local stream
+        if (localVideoRef.current?.srcObject) {
+          (localVideoRef.current.srcObject as MediaStream)
+            .getTracks()
+            .forEach((track) => track.stop());
+          localVideoRef.current.srcObject = null;
+        }
+
+        // Clear remote stream
+        if (remoteVideoRef.current?.srcObject) {
+          (remoteVideoRef.current.srcObject as MediaStream)
+            .getTracks()
+            .forEach((track) => track.stop());
+          remoteVideoRef.current.srcObject = null;
+        }
+
+        iceQueueRef.current = [];
+
+        setActiveCall(null);
       }
+    });
 
-      // Stop local stream
-      if (localVideoRef.current?.srcObject) {
-        (localVideoRef.current.srcObject as MediaStream)
-          .getTracks()
-          .forEach((track) => track.stop());
-        localVideoRef.current.srcObject = null;
-      }
+    return () => unsub();
+  }, [activeCall]);
 
-      // Clear remote stream
-      if (remoteVideoRef.current?.srcObject) {
-        (remoteVideoRef.current.srcObject as MediaStream)
-          .getTracks()
-          .forEach((track) => track.stop());
-        remoteVideoRef.current.srcObject = null;
-      }
+  const toggleMute = () => {
+    const stream = localVideoRef.current?.srcObject as MediaStream;
+    if (!stream) return;
 
-      iceQueueRef.current = [];
+    stream.getAudioTracks().forEach(track => {
+      track.enabled = !track.enabled;
+    });
 
-      setActiveCall(null);
+    setIsMuted(prev => !prev);
+  };
+
+  const toggleCamera = () => {
+    const stream = localVideoRef.current?.srcObject as MediaStream;
+    if (!stream) return;
+
+    stream.getVideoTracks().forEach(track => {
+      track.enabled = !track.enabled;
+    });
+
+    setIsCameraOff(prev => !prev);
+  };
+
+
+
+  const cleanupCall = () => {
+    // 1. Close peer connection
+    if (pcRef.current) {
+      pcRef.current.close();
+      pcRef.current = null;
     }
-  });
 
-  return () => unsub();
-}, [activeCall]);
+    // 2. Stop local stream
+    if (localVideoRef.current?.srcObject) {
+      (localVideoRef.current.srcObject as MediaStream)
+        .getTracks()
+        .forEach(track => track.stop());
+    }
 
-const toggleMute = () => {
-  const stream = localVideoRef.current?.srcObject as MediaStream;
-  if (!stream) return;
+    // 3. Clear video elements
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = null;
+    }
 
-  stream.getAudioTracks().forEach(track => {
-    track.enabled = !track.enabled;
-  });
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = null;
+    }
 
-  setIsMuted(prev => !prev);
-};
+    // 4. Reset ICE queue
+    iceQueueRef.current = [];
 
-const toggleCamera = () => {
-  const stream = localVideoRef.current?.srcObject as MediaStream;
-  if (!stream) return;
+    // 5. Reset state
+    setActiveCall(null);
+    setCallStatus("idle");
+    setCallStartTime(null);
+  };
 
-  stream.getVideoTracks().forEach(track => {
-    track.enabled = !track.enabled;
-  });
-
-  setIsCameraOff(prev => !prev);
-};
 
 
   return (
@@ -113,7 +159,12 @@ const toggleCamera = () => {
         toggleMute,
         toggleCamera,
         isMuted,
-        isCameraOff
+        isCameraOff,
+        callStatus,
+        setCallStatus,
+        callStartTime,
+        setCallStartTime,
+        cleanupCall
       }}
     >
       {children}

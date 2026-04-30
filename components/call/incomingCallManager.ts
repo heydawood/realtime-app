@@ -19,7 +19,7 @@ export const useIncomingCallManager = (user: any) => {
   const [incomingCall, setIncomingCall] = useState<any>(null);
 
   // Get shared references from CallContext instead of creating local ones
-  const { pcRef, localVideoRef, remoteVideoRef, iceQueueRef, setActiveCall } = useCallContext();
+  const { pcRef, localVideoRef, remoteVideoRef, iceQueueRef, setActiveCall, setCallStatus, setCallStartTime, cleanupCall } = useCallContext();
 
   // LISTEN FOR INCOMING CALLS
   useEffect(() => {
@@ -37,11 +37,21 @@ export const useIncomingCallManager = (user: any) => {
       const callDoc = snapshot.docs[0];
 
       if (callDoc) {
+        const data = callDoc.data();
         // 3) Extract call data AND document ID (important for later updates)
         setIncomingCall({
           ...callDoc.data(),
           id: callDoc.id,
         });
+        setCallStatus("ringing");
+
+        // handle reject from caller or auto cleanup
+        if (data.status === "rejected" || data.status === "ended") {
+          setIncomingCall(null);
+          setActiveCall(null);
+          setCallStatus("idle");
+        }
+
       } else {
         // 4) If no incoming calls, clear the state
         setIncomingCall(null);
@@ -159,6 +169,10 @@ export const useIncomingCallManager = (user: any) => {
     // This tells our peer connection what we want to send
     await pc.setLocalDescription(answer);
 
+
+    setCallStatus("connected");
+    setCallStartTime(Date.now());
+
     // 18) Save the answer back to Firestore so the caller receives it
     // Also update call status to "accepted"
     await updateDoc(callRef, {
@@ -168,12 +182,32 @@ export const useIncomingCallManager = (user: any) => {
       },
       status: "accepted",
     });
+
+
   };
+
+  //rejects the call
+  const rejectCall = async () => {
+    if (!incomingCall?.id) return;
+
+    const callRef = doc(db, "calls", incomingCall.id);
+
+    await updateDoc(callRef, {
+      status: "rejected",
+    });
+
+    // Reset local UI state
+    cleanupCall()
+  };
+
+
+
 
   return {
     incomingCall,
     acceptCall,
     localVideoRef,
     remoteVideoRef,
+    rejectCall
   };
 };

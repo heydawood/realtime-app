@@ -3,8 +3,6 @@
 import { useParams } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useChatPageManager } from "./chatPageManager";
-import { Button } from "@/components/ui/button";
-import { Phone } from "lucide-react";
 import ChatHeader from "@/components/chat/ChatHeader";
 import MessageBubble from "@/components/chat/MessageBubble";
 import ChatInput from "@/components/chat/ChatInput";
@@ -13,15 +11,7 @@ export default function ChatPage() {
     const { chatId } = useParams();
     const currentUser = useAuthStore((s) => s.user);
 
-    const {
-        messages,
-        text,
-        setText,
-        sendMessage,
-        startCall,
-        localVideoRef,
-        remoteVideoRef,
-    } = useChatPageManager(chatId as string, currentUser);
+    const { messages, sendMessage, startCall } = useChatPageManager(chatId as string, currentUser);
 
     return (
         <div className="flex flex-col h-full">
@@ -60,42 +50,10 @@ export default function ChatPage() {
 
 
             {/* INPUT */}
-            {/* <div className="border-t p-3 flex gap-2 bg-background">
-                <input
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    placeholder="Type a message"
-                    className="flex-1 px-3 py-2 border rounded-md focus:outline-none"
-                />
-
-                <Button className="bg-primary-500" onClick={sendMessage}>
-                    Send
-                </Button>
-            </div> */}
             <div className="border-t p-3 bg-background">
                 <ChatInput onSend={sendMessage} />
             </div>
 
-
-            {/* VIDEO OVERLAY */}
-            {/* <div className="absolute bottom-20 right-4 flex flex-col gap-2">
-
-                <video
-                    ref={remoteVideoRef}
-                    autoPlay
-                    playsInline
-                    className="w-56 h-40 bg-black rounded-lg shadow"
-                />
-
-                <video
-                    ref={localVideoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-32 h-24 bg-black rounded-lg self-end shadow"
-                />
-
-            </div> */}
         </div>
     );
 }

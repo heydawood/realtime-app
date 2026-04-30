@@ -173,25 +173,6 @@
   /* Sidebar */
   .bg-sidebar-custom { background-color: rgb(var(--sidebar-bg)); }
 
-    /* .primary-scrollbar::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-
-.primary-scrollbar::-webkit-scrollbar-track {
-  border-radius: 100vh;
-  background: #fff7cc;
-}
-
-.primary-scrollbar::-webkit-scrollbar-thumb {
-  background: #facc15;
-  border-radius: 100vh;
-  border: 3px solid #facc15;
-}
-
-.primary-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #eab308;
-} */
 
 }
 

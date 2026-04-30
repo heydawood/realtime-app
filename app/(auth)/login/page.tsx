@@ -10,8 +10,8 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const router = useRouter()
 
- const router = useRouter()
   const handleLogin = async () => {
     try {
       await login(email, password);

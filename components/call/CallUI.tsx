@@ -5,6 +5,7 @@ import { PhoneOff, Mic, Video, MicOff, VideoOff } from "lucide-react";
 import { useCallContext } from "@/contexts/CallContext";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useCallTimer } from "@/hooks/useCallTimer";
 
 export default function CallUI() {
   const {
@@ -16,8 +17,11 @@ export default function CallUI() {
     toggleCamera,
     toggleMute,
     isMuted,
-    isCameraOff
+    isCameraOff,
+    callStatus,
+    callStartTime
   } = useCallContext();
+  const duration = useCallTimer(callStartTime);
 
   if (!activeCall) return null;
 
@@ -27,11 +31,11 @@ export default function CallUI() {
       pcRef.current = null;
     }
 
-      if (activeCall?.id) {
-    await updateDoc(doc(db, "calls", activeCall.id), {
-      status: "ended",
-    });
-  }
+    if (activeCall?.id) {
+      await updateDoc(doc(db, "calls", activeCall.id), {
+        status: "ended",
+      });
+    }
 
     setActiveCall(null);
   };
@@ -60,10 +64,14 @@ export default function CallUI() {
 
       {/* CALL INFO */}
       <div className="absolute top-6 left-1/2 -translate-x-1/2 text-white text-center">
-        <p className="text-lg font-semibold">Calling...</p>
         <p className="text-sm opacity-70">
           {activeCall.role === "caller" ? "Outgoing" : "Incoming"}
         </p>
+
+        <p className="text-sm text-muted-foreground">
+          {callStatus === "connected" && duration}
+        </p>
+
       </div>
 
       {/* CONTROLS */}
@@ -71,12 +79,12 @@ export default function CallUI() {
 
         {/* MUTE (placeholder) */}
         <Button
-        onClick={toggleMute}
+          onClick={toggleMute}
           size="icon"
           variant="secondary"
           className="rounded-full w-14 h-14"
         >
-          {isMuted ? <MicOff/> : <Mic />}
+          {isMuted ? <MicOff /> : <Mic />}
         </Button>
 
         {/* END CALL */}
@@ -90,7 +98,7 @@ export default function CallUI() {
 
         {/* VIDEO TOGGLE (placeholder) */}
         <Button
-        onClick={toggleCamera}
+          onClick={toggleCamera}
           size="icon"
           variant="secondary"
           className="rounded-full w-14 h-14"

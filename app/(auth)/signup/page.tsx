@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signup } from "@/lib/auth";
 import { customToast } from "@/components/common/ShowToast";
+import { Button } from "@/components/ui/button";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -24,9 +25,9 @@ export default function SignupPage() {
       <input onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
       <input onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" />
 
-      <button onClick={handleSignup} className="bg-blue-500 text-white p-2">
+      <Button onClick={handleSignup} className="bg-primary-500 hover:bg-primary-600 text-white p-2">
         Signup
-      </button>
+      </Button>
     </div>
   );
 }

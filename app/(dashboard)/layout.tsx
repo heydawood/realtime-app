@@ -1,6 +1,13 @@
 import { AlertDialogProvider } from "@/components/common/CustomAlert"
 import Sidebar from "@/components/Sidebar/Sidebar"
 import { SidebarProvider } from "@/components/ui/sidebar"
+import { Metadata } from "next";
+
+
+export const metadata: Metadata = {
+  title: "RealTime App",
+  description: "Real time solution for real problems",
+};
 
 const layout = ({ children }: { children: React.ReactNode }) => {
   return (

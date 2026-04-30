@@ -13,15 +13,17 @@ import {
 import { db } from "@/lib/firebase";
 import { createPeerConnection } from "@/lib/webrtc";
 import { useCallContext } from "@/contexts/CallContext";
+import { customToast } from "@/components/common/ShowToast";
 
 export const useChatPageManager = (chatId: string, currentUser: any) => {
+
   // STATE
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState("");
 
   // Get shared references from CallContext instead of creating local ones
   // This ensures caller and receiver use the SAME peer connection
-  const { pcRef, localVideoRef, remoteVideoRef, iceQueueRef, setActiveCall } = useCallContext();
+  const { pcRef, localVideoRef, remoteVideoRef, iceQueueRef, setActiveCall, setCallStatus, setCallStartTime } = useCallContext();
 
   // FETCH MESSAGES (REAL-TIME)
   useEffect(() => {
@@ -80,6 +82,8 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
 
     // 4) Mark this call as active with role "caller"
     setActiveCall({ id: callId, role: "caller" });
+    setCallStatus("calling"); // when starting call
+
 
     // 5) Monitor peer connection state changes
     pc.onconnectionstatechange = () => {
@@ -157,13 +161,55 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
     onSnapshot(callDoc, async (docSnap) => {
       const data = docSnap.data();
 
+      if (!data) return;
+
+      // HANDLE REJECT (independent of answer)
+      if (data.status === "rejected") {
+        console.log("Call rejected");
+        customToast.warning('Call rejected')
+
+        if (pcRef.current) {
+          pcRef.current.close();
+          pcRef.current = null;
+        }
+
+        setActiveCall(null);
+        setCallStatus("ended");
+
+        setTimeout(() => {
+          setCallStatus("idle");
+        }, 1500);
+
+        return; // stop further execution
+      }
+
+      //HANDLE CALL ENDED (other user hung up)
+      if (data.status === "ended") {
+        console.log("Call ended by other user");
+        customToast.info('Call ended by other user')
+
+        if (pcRef.current) {
+          pcRef.current.close();
+          pcRef.current = null;
+        }
+
+        setActiveCall(null);
+        setCallStatus("idle");
+
+        return;
+      }
+
+      //HANDLE ANSWER (normal flow)
       // When answer arrives AND we haven't set remote description yet
       if (data?.answer && !pc.currentRemoteDescription) {
+        
         // 18) Set the receiver's answer as our remote description
         // This tells our peer connection what the receiver wants to send
         await pc.setRemoteDescription(
           new RTCSessionDescription(data.answer)
         );
+        setCallStatus("connected");
+        setCallStartTime(Date.now());
 
         // 19) Now that remote description is set, add any queued ICE candidates
         for (const candidate of iceQueueRef.current) {
@@ -171,6 +217,7 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
         }
         iceQueueRef.current = [];
       }
+
     });
 
     // 20) Listen for ICE candidates from the receiver

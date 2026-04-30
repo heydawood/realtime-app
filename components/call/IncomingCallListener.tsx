@@ -3,9 +3,6 @@
 import { useAuthStore } from "@/store/useAuthStore";
 import { useIncomingCallManager } from "./incomingCallManager";
 import { Button } from "../ui/button";
-import { useCallContext } from "@/contexts/CallContext";
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 
 export default function IncomingCallListener() {
   const user = useAuthStore((s) => s.user);
@@ -14,24 +11,9 @@ export default function IncomingCallListener() {
   const {
     incomingCall,
     acceptCall,
+    rejectCall
   } = useIncomingCallManager(user);
 
-  // const { activeCall, pcRef, } = useCallContext();
-
-  // if (!incomingCall) return null;
-
-  // const endCall = async () => {
-  //   if (pcRef.current) {
-  //     pcRef.current.close();
-  //     pcRef.current = null;
-  //   }
-
-  //   if (activeCall?.id) {
-  //     await updateDoc(doc(db, "calls", activeCall.id), {
-  //       status: "ended",
-  //     });
-  //   }
-  // }
 
   return (
     <>
@@ -49,7 +31,7 @@ export default function IncomingCallListener() {
             Accept
           </Button>
 
-          <Button variant="destructive" className="bg-red-500 px-3 py-1 text-white">
+          <Button onClick={rejectCall} variant="destructive" className="bg-red-500 px-3 py-1 text-white">
             Reject
           </Button>
         </div>

@@ -30,7 +30,7 @@ export default function ChatItem({
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-center">
-          <span className="font-medium truncate">{name}</span>
+          <span className="font-medium truncate ">{name}</span>
           <span className="text-xs text-muted-foreground">{time}</span>
         </div>
 
