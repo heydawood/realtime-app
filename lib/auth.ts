@@ -1,3 +1,5 @@
+//'use server';
+
 import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
@@ -6,6 +8,7 @@ import {
 import { auth } from "./firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
+//import { cookies } from "next/headers";
 
 export const signup = async (email: string, password: string) => {
     const res = await createUserWithEmailAndPassword(auth, email, password);
@@ -22,6 +25,8 @@ export const signup = async (email: string, password: string) => {
 };
 
 export const login = async (email: string, password: string) => {
+    // const cookieStore = await cookies();
+    // cookieStore.set("auth", "true");
     return signInWithEmailAndPassword(auth, email, password);
 };
 

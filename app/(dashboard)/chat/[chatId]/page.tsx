@@ -11,6 +11,7 @@ export default function ChatPage() {
     const { chatId } = useParams();
     const currentUser = useAuthStore((s) => s.user);
 
+
     const { messages, sendMessage, startCall } = useChatPageManager(chatId as string, currentUser);
 
     return (
@@ -27,7 +28,7 @@ export default function ChatPage() {
             <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-muted/30">
                 {messages.length === 0 && (
                     <p className="text-center text-muted-foreground text-sm">
-                        No messages yet
+                         Loading...
                     </p>
                 )}
 

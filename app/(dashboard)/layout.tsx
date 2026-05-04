@@ -14,7 +14,7 @@ const layout = ({ children }: { children: React.ReactNode }) => {
     <div className="h-screen w-full flex overflow-hidden">
       <AlertDialogProvider>
 
-        <SidebarProvider>
+        {/* <SidebarProvider> */}
           <Sidebar />
 
 
@@ -24,7 +24,7 @@ const layout = ({ children }: { children: React.ReactNode }) => {
           </div>
 
 
-        </SidebarProvider>
+        {/* </SidebarProvider> */}
 
       </AlertDialogProvider>
     </div>

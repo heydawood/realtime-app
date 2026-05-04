@@ -9,6 +9,9 @@ import {
   onSnapshot,
   doc,
   setDoc,
+  updateDoc,
+  increment,
+  getDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { createPeerConnection } from "@/lib/webrtc";
@@ -46,20 +49,71 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
   }, [chatId]);
 
   // SEND MESSAGE
+  
+  // const sendMessage = async (message: string) => {
+  //   // 1) Don't send empty messages
+  //   if (!message.trim()) return;
+
+  //   // 2) Add message to Firestore
+  //   await addDoc(collection(db, "chats", chatId, "messages"), {
+  //     text: message,
+  //     senderId: currentUser?.uid,
+  //     createdAt: Date.now(),
+  //   });
+
+  //   // 3) Clear the input field
+  //   setText("");
+  // };
+
   const sendMessage = async (message: string) => {
     // 1) Don't send empty messages
     if (!message.trim()) return;
 
+    const otherUserId = chatId
+      .split("_")
+      .find((id) => id !== currentUser?.uid);
+
+    const chatRef = doc(db, "chats", chatId);
+
     // 2) Add message to Firestore
+    //ALWAYS add message
     await addDoc(collection(db, "chats", chatId, "messages"), {
       text: message,
       senderId: currentUser?.uid,
       createdAt: Date.now(),
     });
 
-    // 3) Clear the input field
-    setText("");
+    const chatSnap = await getDoc(chatRef);
+
+    if (!chatSnap.exists()) {
+      // CREATE CHAT DOC (FIRST MESSAGE)
+      await setDoc(chatRef, {
+        participants: [currentUser?.uid, otherUserId],
+        lastMessage: message,
+        lastMessageAt: Date.now(),
+        lastMessageSenderId: currentUser?.uid,
+        unreadCount: {
+          [currentUser?.uid]: 0,
+          [otherUserId!]: 1,
+        },
+      });
+
+    } else {
+      // UPDATE CHAT DOC
+      await updateDoc(chatRef, {
+        lastMessage: message,
+        lastMessageAt: Date.now(),
+        lastMessageSenderId: currentUser?.uid,
+        [`unreadCount.${otherUserId}`]: increment(1),
+        [`unreadCount.${currentUser?.uid}`]: 0,
+      });
+    }
   };
+
+
+
+
+
 
   // START CALL (CALLER/INITIATOR SIDE)
   const startCall = async () => {
@@ -185,8 +239,8 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
 
       //HANDLE CALL ENDED (other user hung up)
       if (data.status === "ended") {
-        console.log("Call ended by other user");
-        customToast.info('Call ended by other user')
+        console.log("Call ended");
+        customToast.info('Call ended')
 
         if (pcRef.current) {
           pcRef.current.close();
@@ -202,7 +256,7 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
       //HANDLE ANSWER (normal flow)
       // When answer arrives AND we haven't set remote description yet
       if (data?.answer && !pc.currentRemoteDescription) {
-        
+
         // 18) Set the receiver's answer as our remote description
         // This tells our peer connection what the receiver wants to send
         await pc.setRemoteDescription(
