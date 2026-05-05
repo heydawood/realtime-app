@@ -38,10 +38,6 @@ export default function ChatHeader({
 
       {/* RIGHT SIDE (ACTIONS) */}
       <div className="flex items-center gap-2">
-        
-        {/* <Button variant="ghost" size="icon" onClick={onCall}>
-          <Phone className="h-5 w-5" />
-        </Button> */}
 
         <Button variant="ghost" size="icon" onClick={onCall}>
           <Video className="h-5 w-5" />

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 
-export default function UserItem({ user, currentUser }: any) {
+export default function UserItem({ user, currentUser, onSelectUser }: any) {
   const router = useRouter();
 
   const handleClick = () => {
@@ -13,6 +13,7 @@ export default function UserItem({ user, currentUser }: any) {
         : `${user.id}_${currentUser.uid}`;
 
     router.push(`/chat/${chatId}`);
+    onSelectUser?.()
   };
 
   return (

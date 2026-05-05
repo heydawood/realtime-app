@@ -26,7 +26,7 @@ export default function MessageBubble({
         {/* MESSAGE TEXT */}
         <p>{message}</p>
 
-        {/* TIME (optional) */}
+        {/* TIME */}
         {time && (
           <span
             className={`

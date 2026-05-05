@@ -9,6 +9,7 @@ import { mockChats } from "./mockChats";
 import { SidebarDropdown } from "../ui/dropdown/dropdown";
 import { useChats } from "./useChats";
 import { useAuthStore } from "@/store/useAuthStore";
+import SidebarFooter from "./SidebarFooter";
 
 export default function Sidebar() {
 
@@ -33,7 +34,7 @@ export default function Sidebar() {
             </div>
 
             {/* SEARCH */}
-            <div className="p-3 border-b">
+            {/* <div className="p-3 border-b">
                 <div className="flex items-center gap-2 bg-muted px-3 py-2 rounded-md">
                     <Search className="w-4 h-4 text-muted-foreground" />
                     <Input
@@ -41,7 +42,7 @@ export default function Sidebar() {
                         className="border-none focus-visible:ring-0 shadow-none p-0"
                     />
                 </div>
-            </div>
+            </div> */}
 
             {/* CHAT LIST */}
             <ScrollArea className="flex-1 h-1">
@@ -49,7 +50,7 @@ export default function Sidebar() {
 
                     {chats.length === 0 && (
                         <p className="p-4 text-sm text-muted-foreground">
-                           Loading...
+                           Select a chat to start messaging, Or start a new conversation
                         </p>
                     )}
 
@@ -63,41 +64,7 @@ export default function Sidebar() {
 
                 </div>
             </ScrollArea>
+            <SidebarFooter/>
         </div>
     );
 }
-
-// "use client";
-
-// import { useAuthStore } from "@/store/useAuthStore";
-// import { ScrollArea } from "@/components/ui/scroll-area";
-// import ChatItem from "./ChatItem";
-// import { useChats } from "./useChats";
-
-// export default function Sidebar() {
-//   const user = useAuthStore((s) => s.user);
-//   const { chats } = useChats(user?.uid);
-
-//   return (
-//     <div className="w-80 h-full border-r bg-sidebar-custom flex flex-col">
-
-//       {/* HEADER */}
-//       <div className="p-4 border-b flex items-center justify-between">
-//         <h2 className="font-semibold text-lg">Chats</h2>
-//       </div>
-
-//       {/* CHAT LIST */}
-//       <ScrollArea className="flex-1">
-//         {chats.length === 0 && (
-//           <p className="p-4 text-sm text-muted-foreground">
-//             No chats yet
-//           </p>
-//         )}
-
-//         {chats.map((chat) => (
-//           <ChatItem key={chat.id} chat={chat} currentUser={user} />
-//         ))}
-//       </ScrollArea>
-//     </div>
-//   );
-// }

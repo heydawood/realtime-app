@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "Real time solution for real problems",
 };
 
-const layout = ({ children }: { children: React.ReactNode }) => {
+const layout = ({ children } : { children: React.ReactNode }) => {
   return (
     <div className="h-screen w-full flex overflow-hidden">
       <AlertDialogProvider>

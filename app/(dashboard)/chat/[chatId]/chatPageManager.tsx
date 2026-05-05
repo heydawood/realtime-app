@@ -28,6 +28,9 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
   // This ensures caller and receiver use the SAME peer connection
   const { pcRef, localVideoRef, remoteVideoRef, iceQueueRef, setActiveCall, setCallStatus, setCallStartTime } = useCallContext();
 
+
+
+
   // FETCH MESSAGES (REAL-TIME)
   useEffect(() => {
     if (!chatId) return;
@@ -40,31 +43,23 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
 
     // 2) Set up real-time listener to automatically update messages
     const unsub = onSnapshot(q, (snapshot) => {
+      
       const msgs = snapshot.docs.map((doc) => doc.data());
       setMessages(msgs);
+
+
+
     });
+
+
 
     // 3) Clean up listener when component unmounts
     return () => unsub();
   }, [chatId]);
 
+
+
   // SEND MESSAGE
-  
-  // const sendMessage = async (message: string) => {
-  //   // 1) Don't send empty messages
-  //   if (!message.trim()) return;
-
-  //   // 2) Add message to Firestore
-  //   await addDoc(collection(db, "chats", chatId, "messages"), {
-  //     text: message,
-  //     senderId: currentUser?.uid,
-  //     createdAt: Date.now(),
-  //   });
-
-  //   // 3) Clear the input field
-  //   setText("");
-  // };
-
   const sendMessage = async (message: string) => {
     // 1) Don't send empty messages
     if (!message.trim()) return;
@@ -110,8 +105,24 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
     }
   };
 
+  //resetting chat read
+  useEffect(() => {
+    if (!chatId || !currentUser) return;
 
+    const markAsRead = async () => {
+      const chatRef = doc(db, "chats", chatId);
 
+      try {
+        await updateDoc(chatRef, {
+          [`unreadCount.${currentUser.uid}`]: 0,
+        });
+      } catch (err) {
+        console.log("Mark as read failed", err);
+      }
+    };
+
+    markAsRead();
+  }, [chatId, currentUser]);
 
 
 
@@ -254,6 +265,7 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
       }
 
       //HANDLE ANSWER (normal flow)
+      
       // When answer arrives AND we haven't set remote description yet
       if (data?.answer && !pc.currentRemoteDescription) {
 

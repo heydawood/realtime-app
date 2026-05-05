@@ -18,7 +18,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
       customToast.success("Log in successful");
-      router.push("/");
+      router.push("/chat/start");
     } catch (err: any) {
       customToast.error(err?.message || "Login failed");
     }

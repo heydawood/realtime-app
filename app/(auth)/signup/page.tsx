@@ -11,14 +11,15 @@ import { Input } from "@/components/ui/input";
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
 
   const router = useRouter();
 
   const handleSignup = async () => {
     try {
-      await signup(email, password);
+      await signup(email, password, username);
       customToast.success("Account created");
-      router.push("/"); // redirect after signup
+      router.push("/chat/start"); // redirect after signup
     } catch (err: any) {
       customToast.error(err?.message || "Signup failed");
     }
@@ -39,6 +40,12 @@ export default function SignupPage() {
         {/* FORM */}
         <div className="space-y-4">
           <Input
+          type="username"
+          placeholder="Username"
+          className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          onChange={(e) => setUsername(e.target.value)}
+          />
+          <Input
             type="email"
             placeholder="Email"
             className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -48,7 +55,7 @@ export default function SignupPage() {
           <Input
             type="password"
             placeholder="Password"
-            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 !focus:ring-primary"
             onChange={(e) => setPassword(e.target.value)}
           />
 
