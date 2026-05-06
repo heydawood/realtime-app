@@ -11,10 +11,13 @@ import { useChats } from "./useChats";
 import { useAuthStore } from "@/store/useAuthStore";
 import SidebarFooter from "./SidebarFooter";
 import { useParams } from "next/navigation";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 export default function Sidebar() {
 
     const user = useAuthStore((s) => s.user);
+    const userData = useCurrentUser(user?.uid);
+
     const params = useParams();
     const activeChatId = params?.chatId as string | undefined;
     
@@ -29,9 +32,9 @@ export default function Sidebar() {
             <div className="p-4 flex items-center justify-between border-b">
                 <div className="flex items-center gap-3">
                     <Avatar>
-                        <AvatarFallback>U</AvatarFallback>
+                        <AvatarFallback>{userData?.username?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
                     </Avatar>
-                    <span className="font-semibold">You</span>
+                    <span className="font-semibold">{userData?.username || "You"}</span>
                 </div>
 
                 {/* <MoreVertical className="w-5 h-5 text-muted-foreground cursor-pointer" /> */}
