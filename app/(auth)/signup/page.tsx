@@ -1,25 +1,28 @@
 "use client";
 
-import { useState } from "react";
 import { signup } from "@/lib/auth";
 import { customToast } from "@/components/common/ShowToast";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
+import { useForm, FormProvider } from "react-hook-form";
+import Input from "@/components/ui/input/Input";
+
+type FormValues = {
+  username: string;
+  email: string;
+  password: string;
+};
 
 export default function SignupPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-
+  const methods = useForm<FormValues>();
   const router = useRouter();
 
-  const handleSignup = async () => {
+  const onSubmit = async (data: FormValues) => {
     try {
-      await signup(email, password, username);
+      await signup(data.email, data.password, data.username);
       customToast.success("Account created");
-      router.push("/chat/start"); // redirect after signup
+      router.push("/chat/start");
     } catch (err: any) {
       customToast.error(err?.message || "Signup failed");
     }
@@ -38,34 +41,56 @@ export default function SignupPage() {
         </div>
 
         {/* FORM */}
-        <div className="space-y-4">
-          <Input
-          type="username"
-          placeholder="Username"
-          className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          onChange={(e) => setUsername(e.target.value)}
-          />
-          <Input
-            type="email"
-            placeholder="Email"
-            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            onChange={(e) => setEmail(e.target.value)}
-          />
+        <FormProvider {...methods}>
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
 
-          <Input
-            type="password"
-            placeholder="Password"
-            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 !focus:ring-primary"
-            onChange={(e) => setPassword(e.target.value)}
-          />
+            <Input
+              name="username"
+              placeholder="Username"
+              label="Username"
+              allowAsterisk
+              rules={{ required: "Username is required" }}
+            />
 
-          <Button
-            onClick={handleSignup}
-            className="w-full bg-primary-500 hover:bg-primary-600 text-white"
-          >
-            Sign up
-          </Button>
-        </div>
+            <Input
+              name="email"
+              type="email"
+              placeholder="Email"
+              label="Email"
+              allowAsterisk
+              rules={{
+                required: "Email is required",
+                pattern: {
+                  value: /\S+@\S+\.\S+/,
+                  message: "Invalid email",
+                },
+              }}
+            />
+
+            <Input
+              name="password"
+              type="password"
+              placeholder="Password"
+              label="Password"
+              allowAsterisk
+              rules={{
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Minimum 6 characters",
+                },
+              }}
+            />
+
+            <Button
+              type="submit"
+              className="w-full bg-primary-500 hover:bg-primary-600 text-white"
+            >
+              Sign up
+            </Button>
+
+          </form>
+        </FormProvider>
 
         {/* FOOTER */}
         <p className="text-sm text-center text-muted-foreground">

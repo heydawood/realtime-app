@@ -22,8 +22,8 @@ export default function DashboardPage() {
             Login or Signup to start chatting
           </p>
 
-          <div className="flex gap-3 justify-center">
-            <Button onClick={() => router.push("/login")}>
+          <div className="flex gap-3 justify-center ">
+            <Button className="text-white" onClick={() => router.push("/login")}>
               Login
             </Button>
 
@@ -39,7 +39,7 @@ export default function DashboardPage() {
     );
   }
 
-  // 🟢 LOGGED IN UI
+  //LOGGED IN UI
   return (
     <div className="flex-1 flex flex-col bg-chat">
 

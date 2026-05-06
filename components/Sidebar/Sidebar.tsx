@@ -10,12 +10,17 @@ import { SidebarDropdown } from "../ui/dropdown/dropdown";
 import { useChats } from "./useChats";
 import { useAuthStore } from "@/store/useAuthStore";
 import SidebarFooter from "./SidebarFooter";
+import { useParams } from "next/navigation";
 
 export default function Sidebar() {
 
     const user = useAuthStore((s) => s.user);
-    const { chats } = useChats(user?.uid);
-    console.log("Chats in sidebar:", chats);
+    const params = useParams();
+    const activeChatId = params?.chatId as string | undefined;
+    
+    const { chats } = useChats(user?.uid, activeChatId);
+    // console.log("Chats in sidebar:", chats);
+
 
     return (
         <div className="w-[320px] h-full flex flex-col border-r bg-sidebar-custom">

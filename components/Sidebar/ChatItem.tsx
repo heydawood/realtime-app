@@ -35,7 +35,7 @@ export default function ChatItem({ chat, currentUser }: any) {
       {/* AVATAR */}
       <Avatar>
         <AvatarFallback>
-          {otherUserId?.[0]?.toUpperCase()}
+          {otherUser?.username?.[0]?.toUpperCase() || otherUserId?.[0]?.toUpperCase()}
         </AvatarFallback>
       </Avatar>
 

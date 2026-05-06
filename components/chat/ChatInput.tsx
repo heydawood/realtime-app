@@ -45,7 +45,7 @@ export default function ChatInput({ onSend }: ChatInputProps) {
           className="absolute right-1 top-1/2 -translate-y-1/2 cursor-pointer rounded-full h-8 w-8"
           disabled={!message || !message.trim()}
         >
-          <Send className="h-4 w-4" />
+          <Send className="h-4 w-4 text-white" />
         </Button>
       </div>
     </form>

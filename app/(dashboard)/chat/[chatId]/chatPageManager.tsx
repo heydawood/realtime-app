@@ -23,6 +23,7 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
   // STATE
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState("");
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // Get shared references from CallContext instead of creating local ones
   // This ensures caller and receiver use the SAME peer connection
@@ -30,6 +31,34 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
 
 
 
+  //resetting chat read
+  useEffect(() => {
+    if (!chatId || !currentUser) return;
+
+    // Mark as read immediately
+    const markAsRead = async () => {
+      const chatRef = doc(db, "chats", chatId);
+
+      try {
+        await updateDoc(chatRef, {
+          [`unreadCount.${currentUser.uid}`]: 0,
+        });
+        setIsChatOpen(true);
+        console.log("RECEIVER → reset unread for:", currentUser.uid);
+      } catch (err) {
+        console.log("Mark as read failed", err);
+      }
+    };
+
+    markAsRead();
+    // Clean up when chat closes
+    return () => {
+      setIsChatOpen(false);
+    };
+
+  }, [chatId, currentUser]);
+
+  
 
   // FETCH MESSAGES (REAL-TIME)
   useEffect(() => {
@@ -43,19 +72,25 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
 
     // 2) Set up real-time listener to automatically update messages
     const unsub = onSnapshot(q, (snapshot) => {
-      
       const msgs = snapshot.docs.map((doc) => doc.data());
       setMessages(msgs);
+      // console.log("3 Fetched messages for chat:", msgs);
 
-
-
+      // Ensure unread count stays 0 while chat is open
+      //console.log(isChatOpen,currentUser,'cht open h')
+      if (isChatOpen && currentUser) {
+        //console.log(isChatOpen,currentUser,'cht open h if me h')
+        const chatRef = doc(db, "chats", chatId);
+        updateDoc(chatRef, {
+          [`unreadCount.${currentUser.uid}`]: 0,
+        }).catch((err) => console.log("Failed to keep unread at 0", err));
+      }
+      console.log("SNAPSHOT → messages updated");
     });
-
-
 
     // 3) Clean up listener when component unmounts
     return () => unsub();
-  }, [chatId]);
+  }, [chatId, isChatOpen, currentUser]);
 
 
 
@@ -77,6 +112,7 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
       senderId: currentUser?.uid,
       createdAt: Date.now(),
     });
+    console.log('1 Message added to Firestore:', message);
 
     const chatSnap = await getDoc(chatRef);
 
@@ -92,8 +128,10 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
           [otherUserId!]: 1,
         },
       });
-
+      console.log("if block SENDER → increment unread for:", otherUserId);
+      
     } else {
+      //console.log(otherUserId,currentUser,'other current')
       // UPDATE CHAT DOC
       await updateDoc(chatRef, {
         lastMessage: message,
@@ -102,27 +140,10 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
         [`unreadCount.${otherUserId}`]: increment(1),
         [`unreadCount.${currentUser?.uid}`]: 0,
       });
+      console.log("else block SENDER → increment unread for:", otherUserId);
     }
   };
 
-  //resetting chat read
-  useEffect(() => {
-    if (!chatId || !currentUser) return;
-
-    const markAsRead = async () => {
-      const chatRef = doc(db, "chats", chatId);
-
-      try {
-        await updateDoc(chatRef, {
-          [`unreadCount.${currentUser.uid}`]: 0,
-        });
-      } catch (err) {
-        console.log("Mark as read failed", err);
-      }
-    };
-
-    markAsRead();
-  }, [chatId, currentUser]);
 
 
 
@@ -265,7 +286,7 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
       }
 
       //HANDLE ANSWER (normal flow)
-      
+
       // When answer arrives AND we haven't set remote description yet
       if (data?.answer && !pc.currentRemoteDescription) {
 

@@ -8,6 +8,9 @@ import MessageBubble from "@/components/chat/MessageBubble";
 import ChatInput from "@/components/chat/ChatInput";
 import { useChats } from "@/components/Sidebar/useChats";
 import { useUser } from "@/hooks/useUser";
+import { useEffect, useRef } from "react";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function ChatPage() {
     const { chatId } = useParams();
@@ -49,7 +52,7 @@ export default function ChatPage() {
             <div className="flex-1 overflow-y-auto p-4 flex flex-col-reverse space-y-2 bg-muted/30">
                 {messages.length === 0 && (
                     <p className="text-center text-muted-foreground text-sm">
-                        Loading...
+                        Start a conversation...
                     </p>
                 )}
 
@@ -68,7 +71,9 @@ export default function ChatPage() {
                         />
                     );
                 })}
+
                 {/* <div ref={bottomRef} /> */}
+
             </div>
 
 

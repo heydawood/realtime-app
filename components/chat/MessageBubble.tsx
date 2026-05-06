@@ -18,7 +18,7 @@ export default function MessageBubble({
         className={`
           max-w-xs px-4 py-2 rounded-2xl text-sm relative
           ${isMe
-            ? "bg-primary text-primary-foreground rounded-br-sm"
+            ? "bg-primary text-white rounded-br-sm"
             : "bg-background border rounded-bl-sm"
           }
         `}

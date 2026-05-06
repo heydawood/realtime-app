@@ -1,22 +1,25 @@
 "use client";
 
-import { useState } from "react";
 import { login } from "@/lib/auth";
 import { customToast } from "@/components/common/ShowToast";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Input } from "@/components/ui/input";
+import { useForm, FormProvider } from "react-hook-form";
+import Input from "@/components/ui/input/Input";
+
+type FormValues = {
+  email: string;
+  password: string;
+};
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
+  const methods = useForm<FormValues>();
   const router = useRouter();
 
-  const handleLogin = async () => {
+  const onSubmit = async (data: FormValues) => {
     try {
-      await login(email, password);
+      await login(data.email, data.password);
       customToast.success("Log in successful");
       router.push("/chat/start");
     } catch (err: any) {
@@ -37,28 +40,36 @@ export default function LoginPage() {
         </div>
 
         {/* FORM */}
-        <div className="space-y-4">
-          <Input
-            type="email"
-            placeholder="Email"
-            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            onChange={(e) => setEmail(e.target.value)}
-          />
+        <FormProvider {...methods}>
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
 
-          <Input
-            type="password"
-            placeholder="Password"
-            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            onChange={(e) => setPassword(e.target.value)}
-          />
+            <Input
+              name="email"
+              type="email"
+              placeholder="Email"
+              label="Email"
+              allowAsterisk
+              rules={{ required: "Email is required" }}
+            />
 
-          <Button
-            onClick={handleLogin}
-            className="w-full bg-primary-500 hover:bg-primary-600 text-white"
-          >
-            Login
-          </Button>
-        </div>
+            <Input
+              name="password"
+              type="password"
+              placeholder="Password"
+              label="Password"
+              allowAsterisk
+              rules={{ required: "Password is required" }}
+            />
+
+            <Button
+              type="submit"
+              className="w-full bg-primary-500 hover:bg-primary-600 text-white"
+            >
+              Login
+            </Button>
+
+          </form>
+        </FormProvider>
 
         {/* FOOTER */}
         <p className="text-sm text-center text-muted-foreground">
