@@ -71,6 +71,7 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
     );
 
     // 2) Set up real-time listener to automatically update messages
+
     const unsub = onSnapshot(q, (snapshot) => {
       const msgs = snapshot.docs.map((doc) => doc.data());
       setMessages(msgs);
@@ -87,6 +88,8 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
       }
       console.log("SNAPSHOT → messages updated");
     });
+
+    
 
     // 3) Clean up listener when component unmounts
     return () => unsub();

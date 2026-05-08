@@ -8,9 +8,6 @@ import MessageBubble from "@/components/chat/MessageBubble";
 import ChatInput from "@/components/chat/ChatInput";
 import { useChats } from "@/components/Sidebar/useChats";
 import { useUser } from "@/hooks/useUser";
-import { useEffect, useRef } from "react";
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 
 export default function ChatPage() {
     const { chatId } = useParams();
@@ -28,14 +25,7 @@ export default function ChatPage() {
 
 
     const { messages, sendMessage, startCall } = useChatPageManager(chatId as string, currentUser);
-
-
-    //to scroll down
-    // const bottomRef = useRef<HTMLDivElement | null>(null);
-
-    // useEffect(() => {
-    //     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    // }, [messages]);
+    
 
     return (
         <div className="flex flex-col h-full">
@@ -72,7 +62,6 @@ export default function ChatPage() {
                     );
                 })}
 
-                {/* <div ref={bottomRef} /> */}
 
             </div>
 

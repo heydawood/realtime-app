@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Phone, Video } from "lucide-react";
+import { Video } from "lucide-react";
 
 interface ChatHeaderProps {
   name: string;

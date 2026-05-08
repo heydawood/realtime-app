@@ -23,12 +23,12 @@ export default function UserItem({ user, currentUser, onSelectUser }: any) {
     >
       <Avatar>
         <AvatarFallback>
-          {user.email?.[0]?.toUpperCase()}
+          {user.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
         </AvatarFallback>
       </Avatar>
 
       <div>
-        <p className="font-medium">{user.email}</p>
+        <p className="font-medium">{user.username || user.email} </p>
       </div>
     </div>
   );
