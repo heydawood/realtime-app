@@ -17,6 +17,7 @@ import { db } from "@/lib/firebase";
 import { createPeerConnection } from "@/lib/webrtc";
 import { useCallContext } from "@/contexts/CallContext";
 import { customToast } from "@/components/common/ShowToast";
+import { useCallStore } from "@/store/useAuthStore";
 
 export const useChatPageManager = (chatId: string, currentUser: any) => {
 
@@ -28,6 +29,8 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
   // Get shared references from CallContext instead of creating local ones
   // This ensures caller and receiver use the SAME peer connection
   const { pcRef, localVideoRef, remoteVideoRef, iceQueueRef, setActiveCall, setCallStatus, setCallStartTime } = useCallContext();
+
+  const usersInCall = useCallStore((s) => s.usersInCall);
 
 
 
@@ -58,7 +61,7 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
 
   }, [chatId, currentUser]);
 
-  
+
 
   // FETCH MESSAGES (REAL-TIME)
   useEffect(() => {
@@ -89,7 +92,6 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
       console.log("SNAPSHOT → messages updated");
     });
 
-    
 
     // 3) Clean up listener when component unmounts
     return () => unsub();
@@ -132,7 +134,7 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
         },
       });
       console.log("if block SENDER → increment unread for:", otherUserId);
-      
+
     } else {
       //console.log(otherUserId,currentUser,'other current')
       // UPDATE CHAT DOC
@@ -159,6 +161,12 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
     const otherUserId = chatId
       .split("_")
       .find((id) => id !== currentUser?.uid);
+
+    // 1.1 CHECK IF OTHER USER IS IN A CALL
+    if (usersInCall.has(otherUserId!)) {
+      customToast.warning(`User is currently in a call`);
+      return;
+    }
 
     // 2) Close any existing peer connection to avoid resource leaks
     if (pcRef.current) {

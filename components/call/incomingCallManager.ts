@@ -186,7 +186,7 @@ export const useIncomingCallManager = (user: any) => {
 
   };
 
-  //rejects the call
+  //19) rejects the call
   const rejectCall = async () => {
     if (!incomingCall?.id) return;
 
@@ -200,9 +200,7 @@ export const useIncomingCallManager = (user: any) => {
     cleanupCall()
   };
 
-
-
-
+  
   return {
     incomingCall,
     acceptCall,

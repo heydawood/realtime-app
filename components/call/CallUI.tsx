@@ -6,6 +6,7 @@ import { useCallContext } from "@/contexts/CallContext";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useCallTimer } from "@/hooks/useCallTimer";
+import IncomingCallListener from "./IncomingCallListener";
 
 export default function CallUI() {
   const {
@@ -19,7 +20,8 @@ export default function CallUI() {
     isMuted,
     isCameraOff,
     callStatus,
-    callStartTime
+    callStartTime,
+    cleanupCall
   } = useCallContext();
   const duration = useCallTimer(callStartTime);
 
@@ -77,7 +79,7 @@ export default function CallUI() {
       {/* CONTROLS */}
       <div className="absolute bottom-10 w-full flex justify-center gap-6">
 
-        {/* MUTE (placeholder) */}
+        {/* MUTE */}
         <Button
           onClick={toggleMute}
           size="icon"
@@ -96,7 +98,7 @@ export default function CallUI() {
           <PhoneOff />
         </Button>
 
-        {/* VIDEO TOGGLE (placeholder) */}
+        {/* VIDEO TOGGLE */}
         <Button
           onClick={toggleCamera}
           size="icon"
