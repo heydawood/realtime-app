@@ -4,8 +4,12 @@ import { useRouter, useParams } from "next/navigation";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import clsx from "clsx";
 import { useUser } from "@/hooks/useUser";
+import { useCallStore } from "@/store/useAuthStore";
+import { PhoneCall } from "lucide-react";
 
 export default function ChatItem({ chat, currentUser }: any) {
+  const usersInCall = useCallStore((s) => s.usersInCall);
+
   const router = useRouter();
   const params = useParams();
 
@@ -22,6 +26,8 @@ export default function ChatItem({ chat, currentUser }: any) {
   const handleClick = () => {
     router.push(`/chat/${chat.id}`);
   };
+
+  const isInCall = usersInCall.has(otherUserId);
 
   return (
     <div
@@ -52,21 +58,36 @@ export default function ChatItem({ chat, currentUser }: any) {
 
       {/* RIGHT SIDE */}
       <div className="flex flex-col items-end gap-1">
-        <span className="text-xs text-muted-foreground">
-          {chat.lastMessageAt
-            ? new Date(chat.lastMessageAt).toLocaleTimeString([], {
+
+
+        {/* to show if user is in call or not */}
+        <div className="flex flex-col items-end gap-1">
+          {isInCall && (
+            <div className="flex items-center gap-1 text-green-500 text-xs">
+              <PhoneCall className="w-3 h-3" />
+              <span>In call</span>
+            </div>
+          )}
+
+          <span className="text-xs text-muted-foreground">
+            {chat.lastMessageAt
+              ? new Date(chat.lastMessageAt).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
               })
-            : ""}
-        </span>
+              : ""}
+          </span>
 
-        {chat.unreadCount?.[currentUser?.uid] > 0 && (
-          <div className="bg-primary-500 text-white text-xs px-2 py-0.5 rounded-full">
-            {chat.unreadCount[currentUser?.uid]}
-          </div>
-        )}
+
+
+          {chat.unreadCount?.[currentUser?.uid] > 0 && (
+            <div className="bg-primary-500 text-white text-xs px-2 py-0.5 rounded-full">
+              {chat.unreadCount[currentUser?.uid]}
+            </div>
+          )}
+
+        </div>
       </div>
-    </div>
-  );
+      </div>
+      );
 }
