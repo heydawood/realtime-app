@@ -18,12 +18,14 @@ export default function MessageBubble({
   time,
   scheduled,
   pending,
+  scheduledFor,
 }: MessageBubbleProps) {
 
-  // SHOW CLOCK ONLY FOR:
-  // scheduled messages sent by ME
+  // SHOW CLOCK ONLY AFTER MESSAGE IS SENT
   const showScheduledIcon =
-    isMe && scheduled;
+    isMe &&
+    scheduled &&
+    !pending;
 
   return (
     <div
@@ -55,8 +57,8 @@ export default function MessageBubble({
         {/* MESSAGE TEXT */}
         <p>{message}</p>
 
-        {/* TIME */}
-        {time && (
+        {/* TIME / SCHEDULE INFO */}
+        {(time || scheduledFor) && (
           <div
             className={`
               text-[10px] mt-1 flex items-center justify-end gap-1
@@ -69,12 +71,32 @@ export default function MessageBubble({
             `}
           >
 
-            {/* CLOCK ICON */}
-            {showScheduledIcon && (
-              <Clock3 className="h-3 w-3" />
-            )}
+            {/* PENDING SCHEDULED MESSAGE */}
+            {pending && scheduledFor ? (
 
-            <span>{time}</span>
+              <span>
+                {/* <Clock3 className="h-3 w-3" /> */}
+                  Scheduled for{" "}
+                {new Date(scheduledFor).toLocaleString([], {
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+
+            ) : (
+
+              <>
+                {/* CLOCK ICON AFTER SENT */}
+                {showScheduledIcon && (
+                  <Clock3 className="h-3 w-3" />
+                )}
+
+                <span>{time}</span>
+              </>
+
+            )}
 
           </div>
         )}
