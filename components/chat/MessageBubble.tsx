@@ -1,5 +1,7 @@
 "use client";
 
+import { Clock3 } from "lucide-react";
+
 interface MessageBubbleProps {
   message: string;
   isMe: boolean;
@@ -16,50 +18,67 @@ export default function MessageBubble({
   time,
   scheduled,
   pending,
-  scheduledFor
 }: MessageBubbleProps) {
+
+  // SHOW CLOCK ONLY FOR:
+  // scheduled messages sent by ME
+  const showScheduledIcon =
+    isMe && scheduled;
+
   return (
-    <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+    <div
+      className={`flex ${
+        isMe
+          ? "justify-end"
+          : "justify-start"
+      }`}
+    >
 
       <div
         className={`
           max-w-xs px-4 py-2 rounded-2xl text-sm relative
-          ${isMe
-            ? "bg-primary text-white rounded-br-sm"
-            : "bg-background border rounded-bl-sm"
+
+          ${
+            isMe
+              ? "bg-primary text-white rounded-br-sm"
+              : "bg-background border rounded-bl-sm"
+          }
+
+          ${
+            pending
+              ? "opacity-80"
+              : ""
           }
         `}
       >
+
         {/* MESSAGE TEXT */}
         <p>{message}</p>
 
-        {/* SCHEDULED INFO */}
-        {scheduled && (
-          <div className="text-[10px] mt-1 opacity-70">
-             Scheduled
-            {pending && " • Pending"}
+        {/* TIME */}
+        {time && (
+          <div
+            className={`
+              text-[10px] mt-1 flex items-center justify-end gap-1
 
-            {scheduledFor && (
-              <>
-                {" "}
-                for{" "}
-                {new Date(scheduledFor).toLocaleString()}
-              </>
+              ${
+                isMe
+                  ? "text-primary-foreground/70"
+                  : "text-muted-foreground"
+              }
+            `}
+          >
+
+            {/* CLOCK ICON */}
+            {showScheduledIcon && (
+              <Clock3 className="h-3 w-3" />
             )}
+
+            <span>{time}</span>
+
           </div>
         )}
 
-        {/* TIME */}
-        {time && (
-          <span
-            className={`
-              text-[10px] mt-1 block text-right
-              ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}
-            `}
-          >
-            {time}
-          </span>
-        )}
       </div>
 
     </div>

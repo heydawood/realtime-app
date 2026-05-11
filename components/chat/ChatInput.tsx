@@ -68,7 +68,7 @@ export default function ChatInput({
     // BLOCK PAST TIME
     if (finalDate.getTime() <= Date.now()) {
       customToast.error(
-        "Please select a future time"
+        "Please select future time"
       );
       return;
     }
