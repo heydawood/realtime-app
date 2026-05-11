@@ -4,16 +4,23 @@ interface MessageBubbleProps {
   message: string;
   isMe: boolean;
   time?: string;
+
+  scheduled?: boolean;
+  pending?: boolean;
+  scheduledFor?: number;
 }
 
 export default function MessageBubble({
   message,
   isMe,
   time,
+  scheduled,
+  pending,
+  scheduledFor
 }: MessageBubbleProps) {
   return (
     <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-      
+
       <div
         className={`
           max-w-xs px-4 py-2 rounded-2xl text-sm relative
@@ -25,6 +32,22 @@ export default function MessageBubble({
       >
         {/* MESSAGE TEXT */}
         <p>{message}</p>
+
+        {/* SCHEDULED INFO */}
+        {scheduled && (
+          <div className="text-[10px] mt-1 opacity-70">
+             Scheduled
+            {pending && " • Pending"}
+
+            {scheduledFor && (
+              <>
+                {" "}
+                for{" "}
+                {new Date(scheduledFor).toLocaleString()}
+              </>
+            )}
+          </div>
+        )}
 
         {/* TIME */}
         {time && (

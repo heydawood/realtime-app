@@ -24,7 +24,7 @@ export default function ChatPage() {
     const otherUser = useUser(otherUserId);
 
 
-    const { messages, sendMessage, startCall } = useChatPageManager(chatId as string, currentUser);
+    const { messages, sendMessage, startCall, scheduleMessage } = useChatPageManager(chatId as string, currentUser);
     
 
     return (
@@ -58,6 +58,9 @@ export default function ChatPage() {
                                 hour: "2-digit",
                                 minute: "2-digit",
                             })}
+                            scheduled={msg.scheduled}
+                            pending={msg.pending}
+                            scheduledFor={msg.scheduledFor}
                         />
                     );
                 })}
@@ -68,7 +71,7 @@ export default function ChatPage() {
 
             {/* INPUT */}
             <div className="border-t p-3 bg-background">
-                <ChatInput onSend={sendMessage} />
+                <ChatInput onSend={sendMessage} onSchedule={scheduleMessage} />
             </div>
 
         </div>

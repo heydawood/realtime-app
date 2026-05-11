@@ -12,6 +12,7 @@ import {
   updateDoc,
   increment,
   getDoc,
+  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { createPeerConnection } from "@/lib/webrtc";
@@ -25,6 +26,7 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState("");
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [scheduledMessages, setScheduledMessages] = useState<any[]>([]);
 
   // Get shared references from CallContext instead of creating local ones
   // This ensures caller and receiver use the SAME peer connection
@@ -74,14 +76,11 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
     );
 
     // 2) Set up real-time listener to automatically update messages
-
     const unsub = onSnapshot(q, (snapshot) => {
       const msgs = snapshot.docs.map((doc) => doc.data());
       setMessages(msgs);
-      // console.log("3 Fetched messages for chat:", msgs);
 
       // Ensure unread count stays 0 while chat is open
-      //console.log(isChatOpen,currentUser,'cht open h')
       if (isChatOpen && currentUser) {
         //console.log(isChatOpen,currentUser,'cht open h if me h')
         const chatRef = doc(db, "chats", chatId);
@@ -96,6 +95,46 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
     // 3) Clean up listener when component unmounts
     return () => unsub();
   }, [chatId, isChatOpen, currentUser]);
+
+
+  //to handle scheduled messages in real-time (remove optimistic message when cron updates status to "sent")
+  useEffect(() => {
+    if (!chatId || !currentUser?.uid) return;
+
+    const q = query(
+      collection(db, "scheduledMessages"),
+      where("chatId", "==", chatId),
+      where("senderId", "==", currentUser.uid)
+    );
+
+    const unsub = onSnapshot(q, (snapshot) => {
+
+      snapshot.docChanges().forEach((change) => {
+
+        if (change.type !== "modified") return;
+
+        const data = change.doc.data();
+
+        // ONLY WHEN CRON SENT MESSAGE
+        if (data.status === "sent") {
+
+          setScheduledMessages((prev) =>
+            prev.filter((msg) => {
+
+              // REMOVE MATCHING OPTIMISTIC MESSAGE
+              return !(
+                msg.text === data.text &&
+                msg.scheduledFor === data.scheduledFor
+              );
+            })
+          );
+        }
+      });
+    });
+
+    return () => unsub();
+
+  }, [chatId, currentUser?.uid]);
 
 
 
@@ -147,6 +186,46 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
       });
       console.log("else block SENDER → increment unread for:", otherUserId);
     }
+  };
+
+
+  //for scheduling messages
+  const scheduleMessage = async (
+    message: string,
+    scheduledFor: number
+  ) => {
+
+    const otherUserId = chatId
+      .split("_")
+      .find((id) => id !== currentUser?.uid);
+
+    // OPTIMISTIC MESSAGE
+    const optimisticMessage = {
+      id: crypto.randomUUID(),
+      text: message,
+      senderId: currentUser.uid,
+      createdAt: Date.now(),
+      scheduled: true,
+      scheduledFor,
+      pending: true,
+    };
+
+    // SHOW IMMEDIATELY IN UI
+    setScheduledMessages((prev) => [
+      ...prev,
+      optimisticMessage,
+    ]);
+
+    // SAVE IN FIREBASE
+    await addDoc(collection(db, "scheduledMessages"), {
+      chatId,
+      text: message,
+      senderId: currentUser.uid,
+      receiverId: otherUserId,
+      scheduledFor,
+      status: "pending",
+      createdAt: Date.now(),
+    });
   };
 
 
@@ -337,12 +416,14 @@ export const useChatPageManager = (chatId: string, currentUser: any) => {
   };
 
   return {
-    messages,
+    messages: [...messages, ...scheduledMessages]
+      .sort((a, b) => a.createdAt - b.createdAt),
     text,
     setText,
     sendMessage,
     startCall,
     localVideoRef,
     remoteVideoRef,
+    scheduleMessage
   };
 };

@@ -9,6 +9,8 @@ import {
   updateDoc,
   doc,
   increment,
+  getDoc,
+  setDoc,
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
@@ -55,15 +57,41 @@ export async function GET(req: NextRequest) {
         }
       );
 
-      // UPDATE CHAT
+      // CHAT REF
       const chatRef = doc(db, "chats", data.chatId);
 
-      await updateDoc(chatRef, {
-        lastMessage: data.text,
-        lastMessageAt: Date.now(),
-        lastMessageSenderId: data.senderId,
-        [`unreadCount.${data.receiverId}`]: increment(1),
-      });
+      // CHECK IF CHAT EXISTS
+      const chatSnap = await getDoc(chatRef);
+
+      if (!chatSnap.exists()) {
+
+        // CREATE CHAT DOC
+        await setDoc(chatRef, {
+          participants: [data.senderId, data.receiverId],
+
+          lastMessage: data.text,
+          lastMessageAt: Date.now(),
+          lastMessageSenderId: data.senderId,
+
+          unreadCount: {
+            [data.senderId]: 0,
+            [data.receiverId]: 1,
+          },
+        });
+
+      } else {
+
+        // UPDATE EXISTING CHAT
+        await updateDoc(chatRef, {
+          lastMessage: data.text,
+          lastMessageAt: Date.now(),
+          lastMessageSenderId: data.senderId,
+
+          [`unreadCount.${data.receiverId}`]: increment(1),
+          [`unreadCount.${data.senderId}`]: 0,
+        });
+
+      }
 
       // MARK MESSAGE AS SENT
       await updateDoc(
